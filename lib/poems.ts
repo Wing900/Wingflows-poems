@@ -4,6 +4,8 @@ import matter from "gray-matter";
 
 export type Poem = {
   id: string;
+  slug: string;
+  routeSlug: string;
   permalink: string;
   title: string;
   category: string;
@@ -37,6 +39,18 @@ function toId(relativePath: string): string {
   return relativePath.replace(/\\/g, "/").replace(/\.md$/, "");
 }
 
+function toSlug(relativePath: string): string {
+  return relativePath.replace(/[\/\\]/g, "-").replace(/\.md$/, "");
+}
+
+export function normalizePoemSlug(value: string): string {
+  return decodeURIComponent(value).replace(/^\/+|\/+$/g, "");
+}
+
+function toRouteSlug(slug: string): string {
+  return Buffer.from(slug, "utf8").toString("base64url");
+}
+
 function sanitizePathSegment(value: string): string {
   return value
     .replace(/[<>:"/\\|?*]/g, "-")
@@ -68,6 +82,8 @@ function parsePoem(filePath: string): Poem {
 
   return {
     id,
+    slug: toSlug(normalizedPath),
+    routeSlug: toRouteSlug(toSlug(normalizedPath)),
     title: frontmatter.title ?? path.basename(filePath, ".md"),
     category,
     sourceFile,
@@ -92,8 +108,38 @@ export function getAllPoems(): Poem[] {
     });
 }
 
+export function getTopPoems(count = 10): Poem[] {
+  return getAllPoems().slice(0, count);
+}
+
 export function getPoemByPermalink(permalink: string): Poem | undefined {
   return getAllPoems().find((poem) => poem.permalink === permalink);
+}
+
+export function getPoemById(id: string): Poem | undefined {
+  return getAllPoems().find((poem) => poem.id === id);
+}
+
+export function getPoemBySlug(slug: string): Poem | undefined {
+  const normalizedSlug = normalizePoemSlug(slug);
+  return getAllPoems().find((poem) => poem.slug === normalizedSlug);
+}
+
+export function getAllPoemSlugs(): string[] {
+  return getAllPoems().map((poem) => poem.slug);
+}
+
+export function getAllPoemRouteSlugs(): string[] {
+  return getAllPoems().map((poem) => poem.routeSlug);
+}
+
+export function getPoemByRouteSlug(routeSlug: string): Poem | undefined {
+  try {
+    const decodedSlug = Buffer.from(routeSlug, "base64url").toString("utf8");
+    return getPoemBySlug(decodedSlug);
+  } catch {
+    return undefined;
+  }
 }
 
 export function getPoems(): Poem[] {

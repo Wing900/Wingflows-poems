@@ -4,3 +4,4 @@ node_modules/
 out/
 next-env.d.ts
 .tmp-orpheus/
+tsconfig.tsbuildinfo

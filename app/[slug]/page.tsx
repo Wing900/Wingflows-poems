@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Fragment } from "react";
-import { getAllPoems, getPoemByPermalink } from "@/lib/poems";
+import {
+  getAllPoemRouteSlugs,
+  getPoemByRouteSlug,
+} from "@/lib/poems";
+import PoemClient from "@/components/PoemClient";
 
 interface Props {
   params: Promise<{
@@ -10,56 +13,38 @@ interface Props {
 }
 
 export const dynamicParams = false;
+export const dynamic = "force-static";
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const poem = getPoemByPermalink(decodeURIComponent(params.slug));
+  const poem = getPoemByRouteSlug(params.slug);
 
   if (!poem) {
     return {};
   }
 
-  const title = poem.title;
-
   return {
-    title: `${title} | Wingflow's Poems`,
-    description: `Read the poem "${title}" by Wingflow.`,
+    title: `${poem.title} | Wingflow's Poems`,
+    description: `Read the poem "${poem.title}" by Wingflow.`,
   };
 }
 
 export function generateStaticParams() {
-  return getAllPoems().map((poem) => ({
-    slug: poem.permalink,
-  }));
+  return getAllPoemRouteSlugs().map((slug) => ({ slug }));
 }
 
 export default async function Poem({ params }: Props) {
   const { slug } = await params;
-  const poem = getPoemByPermalink(decodeURIComponent(slug));
+  const poem = getPoemByRouteSlug(slug);
 
   if (!poem) {
     return notFound();
   }
 
-  const blocks = poem.content.split(/\r?\n\r?\n/);
-
   return (
-    <main className="min-h-[50vh] w-full bg-zinc-100/90 py-12 px-8 dark:bg-zinc-950/80">
-      <article className="container prose prose-zinc mx-auto md:prose-2xl dark:prose-invert">
-        <h1>{poem.title}</h1>
-        <main>
-          {blocks.map((block, blockIndex) => (
-            <p key={`${poem.id}-${blockIndex}`}>
-              {block.split(/\r?\n/).map((line, index, array) => (
-                <Fragment key={`${poem.id}-${blockIndex}-${index}`}>
-                  {line}
-                  {index !== array.length - 1 && <br />}
-                </Fragment>
-              ))}
-            </p>
-          ))}
-        </main>
-      </article>
-    </main>
+    <PoemClient
+      title={poem.title}
+      blocks={poem.content.split(/\r?\n\r?\n/)}
+    />
   );
 }

@@ -4,6 +4,8 @@ import AnimatedCursor from "react-animated-cursor";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageTransition from "@/components/PageTransition";
+import SplashScreen from "@/components/SplashScreen";
 import { cn } from "@/util/css";
 
 const ebGaramond = EB_Garamond({
@@ -16,6 +18,11 @@ export const metadata: Metadata = {
   title: "Wingflow's Poems",
   description:
     "Explore a collection of poems by Wingflow, arranged as a quiet public archive.",
+  icons: {
+    icon: "/自画像.png",
+    shortcut: "/自画像.png",
+    apple: "/自画像.png",
+  },
 };
 
 export default function RootLayout({
@@ -50,8 +57,9 @@ export default function RootLayout({
             showSystemCursor={true}
           />
         </div>
+        <SplashScreen />
         <Navbar />
-        {children}
+        <PageTransition>{children}</PageTransition>
         <Footer />
       </body>
     </html>
