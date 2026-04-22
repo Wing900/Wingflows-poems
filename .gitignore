@@ -1,1 +1,6 @@
 __pycache__/
+.next/
+node_modules/
+out/
+next-env.d.ts
+.tmp-orpheus/
