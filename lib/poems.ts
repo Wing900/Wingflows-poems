@@ -4,12 +4,13 @@ import matter from "gray-matter";
 
 export type Poem = {
   id: string;
-  slug: string[];
+  permalink: string;
   title: string;
   category: string;
   sourceFile: string;
   extractedOn?: string;
   content: string;
+  writtenAt: Date;
 };
 
 type RawPoemData = {
@@ -20,6 +21,7 @@ type RawPoemData = {
 };
 
 const POEMS_ROOT = path.join(process.cwd(), "poems");
+const SOURCE_ROOT = process.cwd();
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -35,6 +37,25 @@ function toId(relativePath: string): string {
   return relativePath.replace(/\\/g, "/").replace(/\.md$/, "");
 }
 
+function sanitizePathSegment(value: string): string {
+  return value
+    .replace(/[<>:"/\\|?*]/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function getWrittenAt(sourceFile: string, filePath: string): Date {
+  if (sourceFile) {
+    const sourcePath = path.join(SOURCE_ROOT, sourceFile);
+    if (fs.existsSync(sourcePath)) {
+      return fs.statSync(sourcePath).mtime;
+    }
+  }
+
+  return fs.statSync(filePath).mtime;
+}
+
 function parsePoem(filePath: string): Poem {
   const source = fs.readFileSync(filePath, "utf8");
   const { data, content } = matter(source);
@@ -42,40 +63,43 @@ function parsePoem(filePath: string): Poem {
   const normalizedPath = relativePath.replace(/\\/g, "/");
   const id = toId(normalizedPath);
   const frontmatter = data as RawPoemData;
+  const sourceFile = frontmatter.source_file ?? "";
+  const category = frontmatter.category ?? path.dirname(normalizedPath);
 
   return {
     id,
-    slug: id.split("/"),
     title: frontmatter.title ?? path.basename(filePath, ".md"),
-    category: frontmatter.category ?? path.dirname(normalizedPath),
-    sourceFile: frontmatter.source_file ?? "",
+    category,
+    sourceFile,
     extractedOn: frontmatter.extracted_on,
     content: content.trim(),
+    writtenAt: getWrittenAt(sourceFile, filePath),
+    permalink: sanitizePathSegment(
+      `${frontmatter.title ?? path.basename(filePath, ".md")}--${category}`,
+    ),
   };
 }
 
 export function getAllPoems(): Poem[] {
   return walk(POEMS_ROOT)
     .map(parsePoem)
-    .sort((a, b) => a.id.localeCompare(b.id, "zh-Hans-CN"));
+    .sort((a, b) => {
+      const timeDiff = b.writtenAt.getTime() - a.writtenAt.getTime();
+      if (timeDiff !== 0) {
+        return timeDiff;
+      }
+      return a.id.localeCompare(b.id, "zh-Hans-CN");
+    });
 }
 
-export function getPoemBySlug(slug: string[]): Poem | undefined {
-  const joined = slug.join("/");
-  return getAllPoems().find((poem) => poem.id === joined);
+export function getPoemByPermalink(permalink: string): Poem | undefined {
+  return getAllPoems().find((poem) => poem.permalink === permalink);
 }
 
-export function getPoemGroups(): Array<{ category: string; poems: Poem[] }> {
-  const grouped = new Map<string, Poem[]>();
+export function getPoems(): Poem[] {
+  return getAllPoems();
+}
 
-  for (const poem of getAllPoems()) {
-    const bucket = grouped.get(poem.category) ?? [];
-    bucket.push(poem);
-    grouped.set(poem.category, bucket);
-  }
-
-  return [...grouped.entries()].map(([category, poems]) => ({
-    category,
-    poems,
-  }));
+export function getPoemContent(permalink: string): string {
+  return getPoemByPermalink(permalink)?.content ?? "";
 }

@@ -1,23 +1,21 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Instrument_Sans } from "next/font/google";
+import { EB_Garamond } from "next/font/google";
+import AnimatedCursor from "react-animated-cursor";
 import "./globals.css";
-import SiteHeader from "@/components/SiteHeader";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { cn } from "@/util/css";
 
-const headingFont = Cormorant_Garamond({
+const ebGaramond = EB_Garamond({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-heading",
-});
-
-const bodyFont = Instrument_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-body",
+  weight: ["400", "600", "700"],
+  variable: "--font-eb-garamond",
 });
 
 export const metadata: Metadata = {
   title: "Wingflow's Poems",
-  description: "A quiet archive of poems by Wingflow.",
+  description:
+    "Explore a collection of poems by Wingflow, arranged as a quiet public archive.",
 };
 
 export default function RootLayout({
@@ -27,19 +25,34 @@ export default function RootLayout({
 }>) {
   return (
     <html
+      className={cn(
+        `${ebGaramond.variable}`,
+        "antialiased scroll-smooth",
+        "bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300",
+        "font-text",
+      )}
       lang="en"
-      className={`${headingFont.variable} ${bodyFont.variable}`}
     >
-      <body className="font-[var(--font-body)] text-[var(--foreground)]">
-        <div className="min-h-screen">
-          <SiteHeader />
-          {children}
-          <footer className="mx-auto max-w-6xl px-6 pb-10 pt-4 text-sm text-[var(--muted)] sm:px-8">
-            <div className="paper rounded-full px-6 py-4 text-center">
-              The code is open. The poems remain Wingflow&apos;s.
-            </div>
-          </footer>
+      <body>
+        <div className="hidden sm:block">
+          <AnimatedCursor
+            innerSize={8}
+            outerSize={35}
+            innerScale={1.5}
+            outerScale={3}
+            outerAlpha={0}
+            innerStyle={{
+              backgroundColor: "var(--cursor-color)",
+            }}
+            outerStyle={{
+              border: "3px solid var(--cursor-color)",
+            }}
+            showSystemCursor={true}
+          />
         </div>
+        <Navbar />
+        {children}
+        <Footer />
       </body>
     </html>
   );
