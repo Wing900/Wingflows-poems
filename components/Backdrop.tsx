@@ -3,10 +3,9 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import BackgroundImage1 from "@/assets/orpheus-1.webp";
-import BackgroundImage2 from "@/assets/orpheus-2.webp";
-import BackgroundImage3 from "@/assets/orpheus-3.webp";
-import BackgroundImage4 from "@/assets/orpheus-4.webp";
+import BackgroundImage1 from "@/assets/portrait-sketch.svg";
+import BackgroundImage2 from "@/assets/book-sketch.svg";
+import BackgroundImage3 from "@/assets/moon-bridge-sketch.svg";
 
 export default function Backdrop({ poemsCount = 10 }: { poemsCount: number }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -39,33 +38,23 @@ export default function Backdrop({ poemsCount = 10 }: { poemsCount: number }) {
     };
   }, []);
 
-  const images = [
-    BackgroundImage1,
-    BackgroundImage2,
-    BackgroundImage3,
-    BackgroundImage4,
-  ];
+  const images = [BackgroundImage1, BackgroundImage2, BackgroundImage3];
 
   const imageConfigs = [
     {
-      desktop: { left: "10%", top: "10%", width: 280 },
-      mobile: { left: "15%", top: "15%", width: 180 },
+      desktop: { left: "13%", top: "14%", width: 260 },
+      mobile: { left: "18%", top: "16%", width: 165 },
       parallaxSpeed: 0.3,
     },
     {
-      desktop: { left: "80%", top: "25%", width: 220 },
-      mobile: { left: "85%", top: "30%", width: 140 },
+      desktop: { left: "80%", top: "28%", width: 210 },
+      mobile: { left: "83%", top: "32%", width: 132 },
       parallaxSpeed: 0.5,
     },
     {
-      desktop: { left: "75%", top: "70%", width: 180 },
-      mobile: { left: "80%", top: "75%", width: 120 },
+      desktop: { left: "73%", top: "73%", width: 250 },
+      mobile: { left: "76%", top: "77%", width: 155 },
       parallaxSpeed: 0.7,
-    },
-    {
-      desktop: { left: "5%", top: "85%", width: 350 },
-      mobile: { left: "10%", top: "90%", width: 220 },
-      parallaxSpeed: 0.4,
     },
   ];
 
@@ -89,12 +78,6 @@ export default function Backdrop({ poemsCount = 10 }: { poemsCount: number }) {
     [0, scrollRange],
     [0, parallaxMultiplier * imageConfigs[2].parallaxSpeed],
   );
-  const parallax4 = useTransform(
-    scrollY,
-    [0, scrollRange],
-    [isMobile ? 25 : 50, parallaxMultiplier * imageConfigs[3].parallaxSpeed],
-  );
-
   const itemHeight = isMobile ? 70 : 50;
   const padding = isMobile ? 150 : 100;
   const estimatedContentHeight = poemsCount * itemHeight + padding;
@@ -108,7 +91,7 @@ export default function Backdrop({ poemsCount = 10 }: { poemsCount: number }) {
     [maxOpacity, 0],
   );
 
-  const parallaxTransforms = [parallax1, parallax2, parallax3, parallax4];
+  const parallaxTransforms = [parallax1, parallax2, parallax3];
 
   return (
     <motion.div
